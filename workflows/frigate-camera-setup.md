@@ -18,16 +18,77 @@ Frigate runs with zero cameras by default (`cameras: {}`). This file documents h
 
 ---
 
-## Step 1 — Find Your Camera's RTSP URL
+## Step 1 — ONVIF Discovery (recommended for IP cameras)
 
-Most IP cameras expose RTSP at one of:
-```
-rtsp://<user>:<pass>@<camera-ip>:554/stream1     # Hikvision, Dahua, Reolink
-rtsp://<user>:<pass>@<camera-ip>:554/h264Preview_01_main  # Reolink main
-rtsp://<camera-ip>/live/ch0                      # generic
+Frigate bundles **go2rtc**, which has native ONVIF support. ONVIF cameras advertise themselves on the network via WS-Discovery — you don't need to know the RTSP URL in advance.
+
+### Auto-discover cameras on the LAN
+
+```bash
+# From wn-srv-01, discover all ONVIF devices:
+docker exec wn-frigate-01 go2rtc -config /dev/null -api.listen :1985 &
+# OR use the go2rtc UI already running inside Frigate at:
+curl http://10.10.30.71:1984/api/sources?src=onvif://
 ```
 
-Test the stream before adding to Frigate:
+Or use a dedicated ONVIF scanner:
+```bash
+# Install onvif-util (one-shot scan, no Docker needed):
+pip3 install onvif-zeep
+python3 -c "
+from onvif import ONVIFCamera
+# Test connection to discovered camera:
+cam = ONVIFCamera('<camera-ip>', 80, '<user>', '<pass>')
+print(cam.devicemgmt.GetDeviceInformation())
+"
+```
+
+### Use go2rtc ONVIF source in Frigate config
+
+go2rtc handles ONVIF negotiation and exposes a local RTSP restream that Frigate reads. This is cleaner than using the raw camera RTSP URL directly:
+
+```yaml
+# In config.yml — go2rtc block (add at top level):
+go2rtc:
+  streams:
+    front_door:
+      - "onvif://<user>:<pass>@<camera-ip>:80"  # go2rtc handles ONVIF auth + stream negotiation
+    back_yard:
+      - "onvif://<user>:<pass>@<camera-ip2>:80"
+
+cameras:
+  front_door:
+    ffmpeg:
+      inputs:
+        - path: rtsp://127.0.0.1:8554/front_door  # read from go2rtc's local restream
+          roles:
+            - detect
+            - record
+```
+
+**Why go2rtc as intermediary**: ONVIF cameras often use non-standard RTSP paths and require ONVIF-specific auth negotiation. go2rtc abstracts this — Frigate just reads a clean local RTSP feed.
+
+### ONVIF port varies by brand
+
+| Brand | Default ONVIF port |
+|-------|--------------------|
+| Hikvision | 80 |
+| Dahua | 80 |
+| Reolink | 8000 |
+| Amcrest | 80 |
+| Axis | 80 |
+| Uniview | 80 |
+
+### Find RTSP URL manually (fallback)
+
+If ONVIF discovery fails, most ONVIF cameras expose RTSP at one of:
+```
+rtsp://<user>:<pass>@<camera-ip>:554/Streaming/Channels/101  # Hikvision
+rtsp://<user>:<pass>@<camera-ip>:554/cam/realmonitor?channel=1&subtype=0  # Dahua
+rtsp://<user>:<pass>@<camera-ip>:554/stream1  # generic
+```
+
+Test with:
 ```bash
 ffprobe -v error -show_entries stream=codec_name,width,height,r_frame_rate \
   "rtsp://<user>:<pass>@<camera-ip>:554/stream1"
