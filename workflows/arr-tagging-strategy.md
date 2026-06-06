@@ -23,38 +23,67 @@ Tags in Sonarr/Radarr/Lidarr are the control plane for content routing. Without 
 
 ---
 
-## Tag Taxonomy
+## Tag Taxonomy — DEPLOYED
 
-### Radarr / Sonarr
+Tags were created via API on 2026-06-06 against an empty library. Every piece of content added after this date should have at least one tag.
 
-| Tag | Maps to | Behavior |
-|-----|---------|---------|
-| `4k` | 4K quality profile | Prefer 2160p remux; bigger file, less compression |
-| `hd` | HD quality profile (default) | 1080p BluRay/WEB |
-| `anime` | Anime quality profile | Prefer HEVC/x265 from anime-specific indexers |
-| `kids` | Kids quality profile | 1080p max; no HDR; auto-download without waiting |
-| `spanish` | Spanish dub/sub quality profile | Bazarr pulls ES-ES/ES-MX subs automatically |
-| `documentary` | Documentary quality profile | Accept 1080p WEB; less strict on source |
-| `no-monitor` | No quality profile change | Stops auto-search on stalled/unwanted items |
+### Radarr Tags
 
-### Lidarr
+| ID | Tag | Quality Profile | Delay Profile | Behavior |
+|----|-----|----------------|---------------|---------|
+| 1 | `4k` | Ultra-HD | 1440min (24h) — waits for remux over first-to-post WEB-DL | 2160p only |
+| 2 | `hd` | HD-1080p | none (default) | Standard 1080p BluRay/WEB |
+| 3 | `anime` | Anime | none | x265/HEVC preferred; anime indexers |
+| 4 | `kids` | HD-720p | none (grab immediately) | 720p–1080p; safe content |
+| 5 | `spanish` | HD-1080p | none | Bazarr prioritises ES-ES/ES-MX subs |
+| 6 | `documentary` | HD-1080p | 240min (4h) — allows better encode to surface | WEB-DL fine |
+| 7 | `concert` | HD-1080p | none | Music performance films |
+| 8 | `hold` | Any | none | Monitored — do NOT auto-search |
 
-| Tag | Maps to | Behavior |
-|-----|---------|---------|
-| `lossless` | FLAC quality profile | Only grab FLAC/ALAC; reject MP3/AAC |
-| `hi-res` | Hi-res audio profile | Prefer 24bit/96kHz+ downloads |
-| `lossy-ok` | MP3 320 profile | For artists where lossless isn't available |
-| `latin` | Latin indexers preferred | Weight indexers with Spanish/Portuguese catalog |
+### Sonarr Tags
+
+| ID | Tag | Quality Profile | Delay Profile | Behavior |
+|----|-----|----------------|---------------|---------|
+| 1 | `4k` | Ultra-HD | 1440min (24h) | 2160p episodes |
+| 2 | `hd` | HD-1080p | none | Standard |
+| 3 | `anime` | Anime | none | Anime series |
+| 4 | `kids` | HD-720p | none | Kids shows; grab fast |
+| 5 | `spanish` | HD-1080p | none | Spanish-language series |
+| 6 | `documentary` | HD-1080p | none | Docs/nature |
+| 7 | `season-pack` | HD-1080p | 10080min (7 days) — waits for full season upload before grabbing | Binge shows |
+| 8 | `hold` | Any | none | Monitored but manual grab only |
+
+### Lidarr Tags
+
+| ID | Tag | Quality Profile | Behavior |
+|----|-----|----------------|---------|
+| 1 | `lossless` | Lossless | FLAC/ALAC only; feeds Navidrome with lossless files |
+| 2 | `hi-res` | Lossless | 24bit/96kHz+ preferred |
+| 3 | `lossy-ok` | Standard | MP3/AAC acceptable; for artists with no lossless releases |
+| 4 | `latin` | Any | Latin music; future indexer routing hook |
 
 ---
 
+## How Tags Work — The Mechanics
+
+Tags in arr apps are **not** auto-applied based on genre. When you add content, you:
+1. Choose the quality profile manually (or the app defaults to "Any")
+2. Assign one or more tags
+
+The tag then activates the matching delay profile, indexer restrictions, and notification rules.
+
+**Rule of thumb when adding content:**
+- Know the type → pick the right tag + quality profile together
+- `4k` tag → set quality profile to "Ultra-HD" at the same time
+- `season-pack` tag → Sonarr will wait 7 days before grabbing any episode
+
 ## Applying Tags — Radarr/Sonarr UI
 
-1. **Settings → Tags** — Create all tags first (they're just strings)
-2. **Settings → Quality Profiles** — One profile per content tier
-3. **Settings → Download Clients** — Optionally tag clients (e.g., `vpn-client` tag)
-4. **Per-movie/show**: Movies → Edit → Tags field (multi-select)
-5. **Bulk-tag**: Movies → select multiple → Edit → Tags → Add/Remove
+1. **Per-movie**: Movies → Click movie → Edit → Tags field (multi-select) + Quality Profile dropdown
+2. **Per-show**: Series → Click show → Edit → Tags + Quality Profile
+3. **Bulk-tag**: Movies/Series → check multiple → Edit → Tags → Add/Remove
+
+> Tags and quality profiles are set independently — you must set both. A `4k` tag without the "Ultra-HD" quality profile does nothing useful.
 
 ### Linking tags to quality profiles (Radarr/Sonarr)
 Tags don't automatically assign quality profiles — you assign a quality profile when you add content. The tag is used by:
