@@ -15,6 +15,8 @@ reference/   Static registries: IP allocations, port map, secret sources
 ### Workflows
 - [Add a New Service](workflows/new-service.md) — full checklist from IP allocation → CF tunnel → commit
 - [Add a New Subdomain (CF)](workflows/new-subdomain-cf.md) — 4-step CF tunnel + DNS + Caddy process
+- [Arr Tagging & Metadata Strategy](workflows/arr-tagging-strategy.md) — tag taxonomy, bulk API tagging, Beets, Frigate→HA event pipeline
+- [Frigate Camera Setup](workflows/frigate-camera-setup.md) — add IP cameras, zones, HA integration, hardware acceleration
 - [Provision BookStack Content](workflows/bookstack-api-provisioning.md) — create books/chapters/pages via REST API
 - [Deploy a ZIM to Kiwix](workflows/kiwix-zim-deploy.md) — add offline content to kiwix.wittycomp.com
 - [Obsidian LiveSync Setup](workflows/obsidian-livesync-setup.md) — configure vault sync on desktop + Android

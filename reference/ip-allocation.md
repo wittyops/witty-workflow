@@ -20,7 +20,11 @@ Source of truth is [wittycomp-lab/SERVICES.md](http://git.wittycomp.com/bearboss
 | `10.10.30.20` | wn-mcp-dns | dns-mcp.wittycomp.com |
 | `10.10.30.25` | wn-nocodb-01 | data.wittycomp.com |
 | `10.10.30.30` | wn-ollama-01 | ollama.wittycomp.com |
-| `10.10.30.35` | wn-mcp-cook | cook.wittycomp.com (Cooklang MCP) |
+| `10.10.30.34` | wn-n8n-01 | n8n.wittycomp.com (workflow automation) |
+| `10.10.30.35` | wn-mosquitto-01 | MQTT broker (1883/9001; no subdomain — internal only) |
+| `10.10.30.36` | wn-mqtt-explorer | mqtt.wittycomp.com (MQTT monitoring UI) |
+| `10.10.30.37` | wn-homeassistant-01 | ha.wittycomp.com |
+| `10.10.30.38` | wn-searxng-01 | search.wittycomp.com |
 | `10.10.30.40` | wn-mcp-tailscale | — |
 | `10.10.30.41` | wn-obsidian-01 | brain.wittycomp.com (CouchDB) |
 | `10.10.30.43` | wn-penpot-01 | design.wittycomp.com |
@@ -41,10 +45,11 @@ Source of truth is [wittycomp-lab/SERVICES.md](http://git.wittycomp.com/bearboss
 | `10.10.30.68` | wn-memory-os-01 | mem.wittycomp.com |
 | `10.10.30.69` | wn-filebrowser-01 | files.wittycomp.com |
 | `10.10.30.70` | wn-gitingest-01 | ingest.wittycomp.com |
+| `10.10.30.71` | wn-frigate-01 | frigate.wittycomp.com (NVR + object detection → MQTT → HA) |
 
 ## Next Available
 
-As of 2026-06-06, the next free addresses are approximately `.71`, `.72`, etc. Always verify against [SERVICES.md](http://git.wittycomp.com/bearboss/wittycomp-lab/src/branch/main/SERVICES.md) before assigning.
+As of 2026-06-06, `.72` is the next free address. Always verify against [SERVICES.md](http://git.wittycomp.com/bearboss/wittycomp-lab/src/branch/main/SERVICES.md) before assigning.
 
 ## Host-Shim Services (port on 10.10.30.250)
 
